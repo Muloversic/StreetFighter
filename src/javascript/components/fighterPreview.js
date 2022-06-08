@@ -7,39 +7,30 @@ export function createFighterPreview(fighter, position) {
     className: `fighter-preview___root ${positionClassName}`
   });
 
-  let fighterName = '';
-  let fighterHealth = 0;
-  let fighterAttack = 0;
-  let fighterDefense = 0;
-  let fighterImage = '';
+  for (let info in fighter) {
+    if (info !== '_id' && info !== 'source') {
+      const fighterInfoElement = createElement({
+        tagName: 'p',
+        className: `fighter-preview__text ${positionClassName}`
+      });
+	  
+      fighterInfoElement.textContent = `${fighter[info]}:  ${info}`;
+      fighterElement.append(fighterInfoElement);
+    }
 
-  if (fighter) {
-    for (let info of fighter) {
-      if (info[0] !== '_id' && info[0] !== 'source') {
-        const fighterNameElement = createElement({
-          tagName: 'p',
-          className: `fighter-preview__text ${positionClassName}`
-        });
+    if (info === 'source') {
+      const attributes = {
+        src: fighter[info],
+        alt: 'fighter'
+      };
 
-        fighterNameElement.textContent = `${info[0]}:  ${info[1]}`;
-        fighterElement.append(fighterNameElement);
-      }
+      const fighterInfoElement = createElement({
+        tagName: 'img',
+        className: `fighter-preview__image ${positionClassName}`,
+        attributes
+      });
 
-      if (info[0] === 'source') {
-        const attributes = {
-          src: info[1],
-          alt: 'fighter'
-        };
-
-        const fighterNameElement = createElement({
-          tagName: 'img',
-          className: `fighter-preview__image ${positionClassName}`,
-          attributes
-        });
-
-        fighterNameElement.textContent = info[1];
-        fighterElement.append(fighterNameElement);
-      }
+      fighterElement.append(fighterInfoElement);
     }
   }
 

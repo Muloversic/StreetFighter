@@ -8,6 +8,8 @@ export function renderArena(selectedFighters) {
   root.innerHTML = '';
   root.append(arena);
   fight(selectedFighters);
+  console.log(selectedFighters);
+
   // todo:
   // - start the fight
   // - when fight is finished show winner
