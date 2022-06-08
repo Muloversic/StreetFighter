@@ -3,7 +3,11 @@ import { controls } from '../../constants/controls';
 export async function fight(firstFighter, secondFighter) {
   runOnKeys(
     (pressed) => {
-      if (pressed.has(controls.PlayerOneAttack) && !pressed.has(controls.PlayerOneBlock)) {
+      if (
+        pressed.has(controls.PlayerOneAttack) &&
+        !pressed.has(controls.PlayerOneBlock) &&
+        !pressed.has(controls.PlayerTwoBlock)
+      ) {
         // first player attacks
         const playerNameElements = document.querySelectorAll('.arena___fighter-name');
         [...playerNameElements].forEach((playerNameElement) => {
@@ -19,13 +23,55 @@ export async function fight(firstFighter, secondFighter) {
           }
         });
       }
-      if (pressed.has(controls.PlayerTwoAttack) && !pressed.has(controls.PlayerTwoBlock)) {
+
+      if (pressed.has(controls.PlayerOneAttack) && pressed.has(controls.PlayerTwoBlock)) {
+        // first player attacks
+        const playerNameElements = document.querySelectorAll('.arena___fighter-name');
+        [...playerNameElements].forEach((playerNameElement) => {
+          if (playerNameElement.textContent === secondFighter.name) {
+            const healtBarElement = playerNameElement.nextElementSibling.children[0];
+            secondFighter.health -= getDamage(firstFighter, null) - getDamage(null, secondFighter);
+            healtBarElement.style.width = secondFighter.health + '%';
+            if (secondFighter.health <= 0) {
+              healtBarElement.style.width = 0 + '%';
+              secondFighter.health = 0;
+              return;
+            }
+          }
+        });
+      }
+
+      if (
+        pressed.has(controls.PlayerTwoAttack) &&
+        !pressed.has(controls.PlayerTwoBlock) &&
+        !pressed.has(controls.PlayerOneBlock)
+      ) {
         // second player attacks
         const playerNameElements = document.querySelectorAll('.arena___fighter-name');
         [...playerNameElements].forEach((playerNameElement) => {
           if (playerNameElement.textContent === firstFighter.name) {
             const healtBarElement = playerNameElement.nextElementSibling.children[0];
             firstFighter.health -= getDamage(secondFighter, null);
+            console.log('clear damage', getDamage(secondFighter, null));
+            healtBarElement.style.width = firstFighter.health + '%';
+            if (firstFighter.health <= 0) {
+              healtBarElement.style.width = 0 + '%';
+              firstFighter.health = 0;
+              return;
+            }
+          }
+        });
+      }
+	  
+      if (pressed.has(controls.PlayerTwoAttack) && pressed.has(controls.PlayerOneBlock)) {
+        // second player attacks
+        const playerNameElements = document.querySelectorAll('.arena___fighter-name');
+        [...playerNameElements].forEach((playerNameElement) => {
+          if (playerNameElement.textContent === firstFighter.name) {
+            const healtBarElement = playerNameElement.nextElementSibling.children[0];
+            firstFighter.health -= getDamage(secondFighter, null) - getDamage(null, firstFighter);
+            console.log('blocked damage', getDamage(secondFighter, null) - getDamage(null, firstFighter));
+
             healtBarElement.style.width = firstFighter.health + '%';
             if (firstFighter.health <= 0) {
               healtBarElement.style.width = 0 + '%';
@@ -41,54 +87,6 @@ export async function fight(firstFighter, secondFighter) {
     controls.PlayerOneBlock,
     controls.PlayerTwoBlock
   );
-
-  window.addEventListener('keydown', (e) => {
-    // if (e.code === controls.PlayerOneAttack && e.code !== controls.PlayerOneBlock) {
-    //   // first player attacks
-    //   const playerNameElements = document.querySelectorAll('.arena___fighter-name');
-    //   [...playerNameElements].forEach((playerNameElement) => {
-    //     if (playerNameElement.textContent === secondFighter.name) {
-    //       const healtBarElement = playerNameElement.nextElementSibling.children[0];
-    //       secondFighter.health -= getDamage(firstFighter, null);
-    //       healtBarElement.style.width = secondFighter.health + '%';
-    //       if (secondFighter.health <= 0) {
-    //         healtBarElement.style.width = 0 + '%';
-    //         secondFighter.health = 0;
-    //         return;
-    //       }
-    //     }
-    //   });
-    // }
-
-    if (e.code === controls.PlayerOneBlock && e.code === controls.PlayerTwoAttack) {
-      // first player defends
-      //   console.log(e.code);
-      //   getDamage(null, firstFighter);
-    }
-
-    if (e.code === controls.PlayerTwoAttack) {
-      //  second attacks
-      //   const playerNameElements = document.querySelectorAll('.arena___fighter-name');
-      //   [...playerNameElements].forEach((playerNameElement) => {
-      //     if (playerNameElement.textContent === firstFighter.name) {
-      //       const healtBarElement = playerNameElement.nextElementSibling.children[0];
-      //       firstFighter.health -= getDamage(secondFighter, null);
-      //       healtBarElement.style.width = firstFighter.health + '%';
-      //       if (firstFighter.health <= 0) {
-      //         healtBarElement.style.width = 0 + '%';
-      //         firstFighter.health = 0;
-      //         return;
-      //       }
-      //     }
-      //   });
-    }
-
-    if (e.code === controls.PlayerTwoBlock && e.code === controls.PlayerOneAttack) {
-      // second defends
-      //   getDamage(null, secondFighter);
-      console.log('player one attack, second block');
-    }
-  });
 
   return new Promise((resolve) => {
     // resolve the promise with the winner when fight is over
@@ -111,7 +109,7 @@ export function getDamage(attacker, defender) {
 
 export function getHitPower(fighter) {
   const criticalHitChance = Math.random() * (3 - 1) + 1; // chance from 1 to 2
-  const power = fighter.attack * criticalHitChance;
+  const power = fighter.attack * 1;
   //   console.log('attac', fighter);
   // return hit power
   return power;
@@ -119,7 +117,7 @@ export function getHitPower(fighter) {
 
 export function getBlockPower(fighter) {
   const dodgeChance = Math.random() * (3 - 1) + 1; // chance from 1 to 2
-  const power = fighter.defense * dodgeChance;
+  const power = fighter.defense * 1;
   //   console.log('defence', fighter);
   // return block power
   return power;
