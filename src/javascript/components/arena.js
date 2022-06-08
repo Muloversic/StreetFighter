@@ -7,9 +7,7 @@ export function renderArena(selectedFighters) {
   const arena = createArena(selectedFighters);
   root.innerHTML = '';
   root.append(arena);
-  fight(selectedFighters);
-  console.log(selectedFighters);
-
+  fight(...selectedFighters);
   // todo:
   // - start the fight
   // - when fight is finished show winner
