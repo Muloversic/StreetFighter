@@ -1,4 +1,3 @@
-import { doc } from 'prettier';
 import { controls } from '../../constants/controls';
 
 export async function fight(firstFighter, secondFighter) {
@@ -32,7 +31,9 @@ export async function fight(firstFighter, secondFighter) {
       [...playerNameElements].forEach((playerNameElement) => {
         if (playerNameElement.textContent === secondFighter.name) {
           const healtBarElement = playerNameElement.nextElementSibling.children[0];
-          secondFighter.health -= getDamage(firstFighter, null) - getDamage(null, secondFighter);
+          const damageFromEnemy = getDamage(firstFighter, null) - getDamage(null, secondFighter);
+          const blockedDamage = damageFromEnemy <= 0 ? 0 : damageFromEnemy;
+          secondFighter.health -= blockedDamage;
           healtBarElement.style.width = secondFighter.health + '%';
           if (secondFighter.health <= 0) {
             healtBarElement.style.width = 0 + '%';
@@ -71,9 +72,9 @@ export async function fight(firstFighter, secondFighter) {
       [...playerNameElements].forEach((playerNameElement) => {
         if (playerNameElement.textContent === firstFighter.name) {
           const healtBarElement = playerNameElement.nextElementSibling.children[0];
-          firstFighter.health -= getDamage(secondFighter, null) - getDamage(null, firstFighter);
-          console.log('blocked damage', getDamage(secondFighter, null) - getDamage(null, firstFighter));
-
+          const damageFromEnemy = getDamage(secondFighter, null) - getDamage(null, firstFighter);
+          const blockedDamage = damageFromEnemy < 0 ? 0 : damageFromEnemy;
+          firstFighter.health -= blockedDamage;
           healtBarElement.style.width = firstFighter.health + '%';
           if (firstFighter.health <= 0) {
             healtBarElement.style.width = 0 + '%';
@@ -149,16 +150,11 @@ export function getDamage(attacker, defender) {
   if (defender) {
     return getBlockPower(defender);
   }
-
-  if (getBlockPower(defender) > getHitPower(attacker)) {
-    return 0;
-  }
 }
 
 export function getHitPower(fighter) {
   const criticalHitChance = Math.random() * (3 - 1) + 1; // chance from 1 to 2
   const power = fighter.attack * criticalHitChance;
-  //   console.log('attac', fighter);
   // return hit power
   return power;
 }
@@ -166,7 +162,6 @@ export function getHitPower(fighter) {
 export function getBlockPower(fighter) {
   const dodgeChance = Math.random() * (3 - 1) + 1; // chance from 1 to 2
   const power = fighter.defense * dodgeChance;
-  //   console.log('defence', fighter);
   // return block power
   return power;
 }
@@ -177,18 +172,6 @@ function runOnKeys(func) {
   document.addEventListener('keydown', function (event) {
     event.preventDefault();
     pressed.add(event.code);
-    // for (let code of codes) {
-    //   // все ли клавиши из набора нажаты?
-    //   if (!pressed.has(code)) {
-    //     return;
-    //   }
-    // }
-
-    // да, все
-    // во время показа alert, если посетитель отпустит клавиши - не возникнет keyup
-    // при этом JavaScript "пропустит" факт отпускания клавиш, а pressed[keyCode] останется true
-    // чтобы избежать "залипания" клавиши -- обнуляем статус всех клавиш, пусть нажимает всё заново
-
     func(pressed);
   });
 
