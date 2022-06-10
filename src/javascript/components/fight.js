@@ -3,7 +3,17 @@ import { controls } from '../../constants/controls';
 export async function fight(firstFighter, secondFighter) {
   let isAllowedPlayerOneToCrit = true;
   let isAllowedPlayerTwoToCrit = true;
-  runOnKeys((pressed) => {
+  let pressed = new Set();
+  document.addEventListener('keydown', function (event) {
+    pressed.add(event.code);
+    doDamage(pressed);
+  });
+
+  document.addEventListener('keyup', function (event) {
+    pressed.delete(event.code);
+  });
+
+  function doDamage(pressed) {
     if (
       pressed.has(controls.PlayerOneAttack) &&
       !pressed.has(controls.PlayerOneBlock) &&
@@ -23,6 +33,7 @@ export async function fight(firstFighter, secondFighter) {
           }
         }
       });
+      pressed.clear();
     }
 
     if (pressed.has(controls.PlayerOneAttack) && pressed.has(controls.PlayerTwoBlock)) {
@@ -42,6 +53,7 @@ export async function fight(firstFighter, secondFighter) {
           }
         }
       });
+      pressed.clear();
     }
 
     if (
@@ -55,7 +67,6 @@ export async function fight(firstFighter, secondFighter) {
         if (playerNameElement.textContent === firstFighter.name) {
           const healtBarElement = playerNameElement.nextElementSibling.children[0];
           firstFighter.health -= getDamage(secondFighter, null);
-          console.log('clear damage', getDamage(secondFighter, null));
           healtBarElement.style.width = firstFighter.health + '%';
           if (firstFighter.health <= 0) {
             healtBarElement.style.width = 0 + '%';
@@ -64,6 +75,7 @@ export async function fight(firstFighter, secondFighter) {
           }
         }
       });
+      pressed.clear();
     }
 
     if (pressed.has(controls.PlayerTwoAttack) && pressed.has(controls.PlayerOneBlock)) {
@@ -83,6 +95,7 @@ export async function fight(firstFighter, secondFighter) {
           }
         }
       });
+      pressed.clear();
     }
 
     const didPlayerOneCriticalCombination = controls.PlayerOneCriticalHitCombination.every((key) => pressed.has(key));
@@ -135,10 +148,19 @@ export async function fight(firstFighter, secondFighter) {
         }, 10000);
       }
     }
-  });
+
+    if (firstFighter.health === 0 || secondFighter.health === 0) {
+      fight(firstFighter, secondFighter);
+      return;
+    }
+  }
 
   return new Promise((resolve) => {
-    // resolve the promise with the winner when fight is over
+    if (firstFighter.health === 0) resolve(secondFighter);
+    if (secondFighter.health === 0) {
+      console.log('shold be resolve');
+      resolve(firstFighter);
+    }
   });
 }
 
@@ -164,18 +186,4 @@ export function getBlockPower(fighter) {
   const power = fighter.defense * dodgeChance;
   // return block power
   return power;
-}
-
-function runOnKeys(func) {
-  let pressed = new Set();
-
-  document.addEventListener('keydown', function (event) {
-    event.preventDefault();
-    pressed.add(event.code);
-    func(pressed);
-  });
-
-  document.addEventListener('keyup', function (event) {
-    pressed.delete(event.code);
-  });
 }
